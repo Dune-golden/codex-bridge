@@ -83,7 +83,7 @@ extension MCPSessionRegistry {
         requestTask: requestTask
       )
       let response = await withTaskCancellationHandler {
-        addingModernServerInfo(to: await requestTask.value)
+        addingModernResultMetadata(to: await requestTask.value)
       } onCancel: {
         requestTask.cancel()
         Task { await createdServer.stop() }
@@ -196,12 +196,15 @@ extension MCPSessionRegistry {
     .error(statusCode: 400, .serverError(code: -32_020, message: message))
   }
 
-  func addingModernServerInfo(to response: HTTPResponse) -> HTTPResponse {
+  func addingModernResultMetadata(to response: HTTPResponse) -> HTTPResponse {
     guard case .data(let data, let headers) = response,
       var object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
       var result = object["result"] as? [String: Any]
     else {
       return response
+    }
+    if result["resultType"] == nil {
+      result["resultType"] = "complete"
     }
     var metadata = result["_meta"] as? [String: Any] ?? [:]
     metadata["io.modelcontextprotocol/serverInfo"] = [
