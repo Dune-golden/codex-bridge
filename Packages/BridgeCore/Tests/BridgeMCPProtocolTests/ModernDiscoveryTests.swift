@@ -28,7 +28,9 @@ final class ModernDiscoveryTests: XCTestCase {
   private static func makeServer() async -> Server {
     let server = Server(name: "fixture", version: "1", capabilities: .init(tools: .init()))
     await server.withMethodHandler(ListTools.self) { _ in
-      ListTools.Result(tools: [.init(name: "fixture", inputSchema: .object(["type": .string("object")]))])
+      ListTools.Result(tools: [
+        .init(name: "fixture", description: nil, inputSchema: .object(["type": .string("object")]))
+      ])
     }
     return server
   }
